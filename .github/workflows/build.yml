@@ -11,12 +11,9 @@ jobs:
 
       - name: Unzip and find project directory
         run: |
-          # ZIPファイルを解凍する
           if ls *.zip 1> /dev/null 2>&1; then
             unzip -q *.zip
           fi
-          # 中身を確認してビルドファイルがあるディレクトリに移動する
-          # (階層が深くても自動で探します)
           cd $(find . -name "build.gradle" -exec dirname {} \;)
           echo "PROJECT_DIR=$(pwd)" >> $GITHUB_ENV
 
@@ -29,8 +26,9 @@ jobs:
       - name: Build with Gradle
         working-directory: ${{ env.PROJECT_DIR }}
         run: |
-          chmod +x gradlew || true
-          ./gradlew build || gradle build
+          # 権限を与えて、必ずプロジェクト内の gradlew を使う
+          chmod +x gradlew
+          ./gradlew build --no-daemon
 
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
